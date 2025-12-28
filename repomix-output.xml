@@ -1,0 +1,1143 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.clj-kondo/.cache/v1/lock
+.lsp/.cache/db.transit.json
+.trae/rules/project_rules.md
+Microsoft.PowerShell_profile.ps1
+openmemory.md
+profile.d/10-git.ps1
+profile.d/20-aliases.ps1
+profile.d/30-completions.ps1
+profile.ps1
+Profile.v1.0-FIXED-CORRECTED.ps1
+Profile.v1.0-FIXED-SYNTAX.ps1
+Profile.v1.0-FIXED.ps1
+Profile.v1.0-improved.ps1
+ProjectPowershell1.code-workspace
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".clj-kondo/.cache/v1/lock">
+
+</file>
+
+<file path=".lsp/.cache/db.transit.json">
+["^ ","~:classpath",["~#set",[]],"~:project-hash","","~:project-root","C:\\Users\\Admin\\Documents\\trae_projects\\ProjectPowershell1","~:settings-hash","99914b932bd37a50b983c5e7c90ae93b","~:kondo-config-hash","65c4152cb3fef869fa5190ad3359d0c4d7ff98c5b8413f894d47516da268bc1","~:dependency-scheme","jar","~:analysis",null,"~:analysis-checksums",["^ "],"~:project-analysis-type","~:project-and-full-dependencies","~:version",13,"~:stubs-generation-namespaces",["^1",[]]]
+</file>
+
+<file path=".trae/rules/project_rules.md">
+
+</file>
+
+<file path="Microsoft.PowerShell_profile.ps1">
+# Minimal loader profile for PowerShell 5.1
+# This file should be placed in: $HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+
+$main = Join-Path $HOME "Documents\PowerShell\Profile.v1.0.ps1"
+try {
+    if (Test-Path $main) { 
+        . $main 
+    } else { 
+        Write-Warning "Profile loader: missing $main" 
+    }
+} catch {
+    Write-Warning "Profile loader failed: $($_.Exception.Message)"
+}
+</file>
+
+<file path="openmemory.md">
+
+</file>
+
+<file path="profile.d/10-git.ps1">
+# Git-related profile components (loaded deferred)
+
+function Get-GitStatusInfo {
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        $branch = git branch --show-current 2>$null
+        $status = git status --porcelain 2>$null
+        
+        if ($branch) {
+            $dirty = if ($status) { "*" } else { "" }
+            return "git:($branch$dirty)"
+        }
+    }
+    return $null
+}
+
+# Git aliases
+Set-Alias -Name g -Value git
+Set-Alias -Name gs -Value git status
+Set-Alias -Name gco -Value git checkout
+Set-Alias -Name gcm -Value git commit
+Set-Alias -Name gp -Value git push
+
+function Get-GitPrompt {
+    $info = Get-GitStatusInfo
+    if ($info) { " $info" } else { "" }
+}
+</file>
+
+<file path="profile.d/20-aliases.ps1">
+# Useful aliases and shortcuts
+
+# Navigation
+Set-Alias -Name .. -Value { Set-Location .. }
+Set-Alias -Name ... -Value { Set-Location ..\.. }
+Set-Alias -Name .... -Value { Set-Location ..\..\.. }
+
+# System
+Set-Alias -Name which -Value Get-Command
+Set-Alias -Name grep -Value Select-String
+
+# File operations
+function Edit-File { param([string]$Path) code $Path }
+Set-Alias -Name e -Value Edit-File
+
+function Show-Path { $env:PATH -split ';' | Where-Object { $_ } }
+Set-Alias -Name path -Value Show-Path
+
+# Process management
+function Kill-Process { param([string]$Name) Get-Process $Name | Stop-Process -Force }
+Set-Alias -Name killp -Value Kill-Process
+
+# Network
+function Get-PublicIP { (Invoke-RestMethod -Uri "https://api.ipify.org").Trim() }
+Set-Alias -Name myip -Value Get-PublicIP
+
+# Utilities
+function Measure-Directory { param([string]$Path = ".") Get-ChildItem $Path -Recurse | Measure-Object -Property Length -Sum }
+Set-Alias -Name dirsize -Value Measure-Directory
+</file>
+
+<file path="profile.d/30-completions.ps1">
+# Additional completion generators
+
+function Enable-KubectlCompletion {
+    Enable-CliCompletionFromCommand -Exe "kubectl" -Args @("completion", "powershell") -MaxAgeDays 30
+}
+
+function Enable-DockerCompletion {
+    if (Test-CommandExists "docker") {
+        # Docker doesn't have native PowerShell completion, but we can set up basic completions
+        Register-ArgumentCompleter -CommandName docker -ScriptBlock {
+            param($wordToComplete, $commandAst, $cursorPosition)
+            
+            $commands = @('build', 'run', 'ps', 'images', 'rm', 'rmi', 'logs', 'exec', 'start', 'stop')
+            $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+            }
+        }
+    }
+}
+
+function Enable-AzureCompletion {
+    Enable-CliCompletionFromCommand -Exe "az" -Args @("completion", "powershell") -MaxAgeDays 30
+}
+
+# Load additional completions in deferred mode
+if ($global:DeferredLoaded) {
+    Enable-KubectlCompletion
+    Enable-DockerCompletion
+    Enable-AzureCompletion
+}
+</file>
+
+<file path="profile.ps1">
+# Minimal loader profile for PowerShell
+# This file should be placed in: $HOME\Documents\PowerShell\profile.ps1
+
+$main = Join-Path $HOME "Documents\PowerShell\Profile.v1.0.ps1"
+try {
+    if (Test-Path $main) { 
+        . $main 
+    } else { 
+        Write-Warning "Profile loader: missing $main" 
+    }
+} catch {
+    Write-Warning "Profile loader failed: $($_.Exception.Message)"
+}
+</file>
+
+<file path="Profile.v1.0-FIXED-CORRECTED.ps1">
+# PowerShell Profile v1.0 - Fixed Version
+# Fixed syntax errors and improved reliability
+
+# ----------------------------
+# Context detection
+# ----------------------------
+function Test-IsAdmin { [bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).Groups -match "S-1-5-32-544") }
+function Test-IsSystem { $env:USERNAME -eq "SYSTEM" }
+function Test-IsInteractive { [Environment]::UserInteractive -and ($Host.Name -ne "Default Host") }
+function Test-IsVSCode { $env:TERM_PROGRAM -eq "vscode" -or $Host.UI.RawUI.WindowTitle -match "Visual Studio Code" }
+function Test-IsWindowsTerminal { $env:WT_SESSION -or $env:WT_PROFILE_ID }
+function Test-IsSSH { $env:SSH_TTY -or $env:SSH_CONNECTION }
+
+$global:ProfileContext = @{
+    IsAdmin = Test-IsAdmin
+    IsSystem = Test-IsSystem
+    IsInteractive = Test-IsInteractive
+    IsVSCode = Test-IsVSCode
+    IsWindowsTerminal = Test-IsWindowsTerminal
+    IsSSH = Test-IsSSH
+    HostName = $Host.Name
+}
+
+# ----------------------------
+# Profile mode selection
+# ----------------------------
+$global:PROFILE_MODE = if ($global:ProfileContext.IsInteractive) { "Full" } else { "Stable" }
+
+# ----------------------------
+# Early PSReadLine setup (for completion UX)
+# ----------------------------
+if ($global:ProfileContext.IsInteractive -and (Get-Module -ListAvailable -Name PSReadLine)) {
+    try {
+        Import-Module PSReadLine -ErrorAction Stop
+        
+        # Fix Windows Terminal paste behavior
+        Set-PSReadLineKeyHandler -Chord 'Ctrl+v' -Function Paste
+        
+        # Predictive IntelliSense (if available)
+        if (Get-Command Set-PSReadLineOption -ParameterName PredictionSource -ErrorAction Ignore) {
+            Set-PSReadLineOption -PredictionSource History
+        }
+        
+        # Colors for better completion experience
+        Set-PSReadLineOption -Colors @{
+            Command = 'Yellow'
+            Parameter = 'Green'
+            Operator = 'Cyan'
+        }
+        
+    } catch {
+        Write-Warning "PSReadLine setup failed: $($_.Exception.Message)"
+    }
+}
+
+# ----------------------------
+# Utility functions
+# ----------------------------
+function Test-CommandExists($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
+
+# ----------------------------
+# Machine-wide tool locations
+# ----------------------------
+$MachineTools = "C:\ProgramData\Tools\bin"
+if (Test-Path $MachineTools) {
+    $env:PATH = "$MachineTools;$env:PATH"
+}
+
+# ----------------------------
+# CLI completion generators with caching
+# ----------------------------
+function Enable-CliCompletionFromCommand {
+    param(
+        [Parameter(Mandatory)]$Exe,
+        [Parameter(Mandatory)]$Args,
+        [int]$MaxAgeDays = 7
+    )
+    
+    if (-not (Test-CommandExists $Exe)) { return }
+    
+    $cacheDir = Join-Path $env:LOCALAPPDATA "PSProfileCache\completions"
+    New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+    $cacheFile = Join-Path $cacheDir "$Exe-completion.ps1"
+    
+    # Generate if cache is stale or missing
+    $shouldGenerate = $true
+    if (Test-Path $cacheFile) {
+        $age = (Get-Date) - (Get-Item $cacheFile).LastWriteTime
+        if ($age.TotalDays -le $MaxAgeDays) { $shouldGenerate = $false }
+    }
+    
+    if ($shouldGenerate) {
+        try {
+            $script = & $Exe $Args 2>$null
+            if ($script -and $script.Length -gt 200) {
+                Set-Content -Path $cacheFile -Value $script -Encoding UTF8
+            }
+        } catch {
+            Write-Warning "Failed to generate completion for ${Exe}: $($_.Exception.Message)"
+        }
+    }
+
+    if (Test-Path $cacheFile) {
+        try { . $cacheFile } catch {
+            Write-Warning "Failed to load completion cache for ${Exe}: $($_.Exception.Message)"
+        }
+    }
+}
+
+function Enable-HelmCompletion {
+    Enable-CliCompletionFromCommand -Exe "helm" -Args @("completion","powershell") -MaxAgeDays 14
+}
+
+# ----------------------------
+# Deferred loading (in-process runspace)
+# ----------------------------
+function Import-ProfileDeferred {
+    param([Parameter(Mandatory)][ScriptBlock]$Deferred)
+
+    # Capture the interactive session state
+    $GlobalState = [psmoduleinfo]::new($false)
+    $GlobalState.SessionState = $ExecutionContext.SessionState
+
+    # Store deferred code as TEXT in the captured session state
+    $GlobalState.SessionState.PSVariable.Set('DeferredText', $Deferred.ToString())
+
+    # Create runspace to run async (in-process)
+    $Runspace   = [runspacefactory]::CreateRunspace($Host)
+    $PowerShell = [powershell]::Create($Runspace)
+    $Runspace.Open()
+    $Runspace.SessionStateProxy.PSVariable.Set('GlobalState', $GlobalState)
+
+    # Async wrapper
+    $Wrapper = {
+        Start-Sleep -Milliseconds 200
+        . $GlobalState {
+            do { Start-Sleep -Milliseconds 200 } until (Get-Command Import-Module -ErrorAction Ignore)
+
+            try {
+                # Rebuild scriptblock INSIDE this session state, then dot-source it
+                $sb = [scriptblock]::Create($DeferredText)
+                . $sb
+            } catch {
+                $errLog = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.error.log"
+                New-Item -ItemType Directory -Path (Split-Path $errLog -Parent) -Force | Out-Null
+                Add-Content -Path $errLog -Encoding UTF8 -Value ("Deferred FAIL " + (Get-Date) + " :: " + $_.Exception.Message)
+                Write-Warning ("Deferred profile load failed: " + $_.Exception.Message)
+            } finally {
+                Remove-Variable DeferredText -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    $null = $PowerShell.AddScript($Wrapper.ToString()).BeginInvoke()
+}
+
+# ----------------------------
+# Deferred content to load
+# ----------------------------
+$DeferredContent = {
+    $logPath = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.log"
+    New-Item -ItemType Directory -Path (Split-Path $logPath -Parent) -Force | Out-Null
+    $global:DeferredLoaded = $true
+    Add-Content -Path $logPath -Encoding UTF8 -Value ("Deferred OK  " + (Get-Date))
+
+    Enable-HelmCompletion
+
+    if (Test-CommandExists "gsudo") { Set-Alias sudo gsudo }
+    if (Test-CommandExists "oh-my-posh") { 
+        try { oh-my-posh init pwsh | Invoke-Expression } catch {}
+    }
+    if (Test-CommandExists "zoxide") {
+        try { zoxide init --cmd z powershell | Invoke-Expression } catch {}
+    }
+    
+    # Load profile.d modules if they exist
+    $profileDir = Join-Path $global:ProfileRoot "profile.d"
+    if (Test-Path $profileDir) {
+        Get-ChildItem $profileDir -Filter "*.ps1" | Sort-Object Name | ForEach-Object {
+            try { . $_.FullName } catch {
+                Write-Warning "Failed to load profile module $($_.Name): $($_.Exception.Message)"
+            }
+        }
+    }
+}
+
+# ----------------------------
+# Health + status functions
+# ----------------------------
+function Show-ProfileStatus {
+    $c = $global:ProfileContext
+    Write-Host "=== Profile v1.0 Status ===" -ForegroundColor Cyan
+    Write-Host ("Mode: " + $global:PROFILE_MODE) -ForegroundColor Yellow
+    Write-Host ("Host: " + $c.HostName + " | VSCode=" + $c.IsVSCode + " | WT=" + $c.IsWindowsTerminal + " | Interactive=" + $c.IsInteractive) -ForegroundColor Gray
+    Write-Host ("Admin=" + $c.IsAdmin + " | SYSTEM=" + $c.IsSystem + " | SSH=" + $c.IsSSH) -ForegroundColor Gray
+}
+
+function Invoke-ProfileHealthCheck {
+    $checks = @(
+        @{ Name="oh-my-posh"; Kind="cmd" },
+        @{ Name="zoxide"; Kind="cmd" },
+        @{ Name="gsudo"; Kind="cmd" },
+        @{ Name="helm"; Kind="cmd" }
+    )
+
+    $results = $checks | ForEach-Object {
+        $present = if ($_.Kind -eq "cmd") { [bool](Get-Command $_.Name -ErrorAction SilentlyContinue) } else { $false }
+        [pscustomobject]@{ Item=$_.Name; Present=$present }
+    }
+    
+    $results | Format-Table -AutoSize
+    return $results
+}
+
+function Edit-Profile {
+    code "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+}
+
+function Update-Profile {
+    param([switch]$Force)
+    
+    if (-not $Force -and -not $global:ProfileContext.IsInteractive) {
+        Write-Warning "Profile updates should be run interactively"
+        return
+    }
+    
+    Write-Host "Updating profile components..." -ForegroundColor Yellow
+    
+    # Update completion caches
+    Enable-HelmCompletion -MaxAgeDays 0
+    
+    Write-Host "Profile update complete" -ForegroundColor Green
+}
+
+# ----------------------------
+# Bootstrap command
+# ----------------------------
+function Bootstrap-TerminalToolchain {
+    param([switch]$MachineWide)
+    
+    Write-Host "=== Terminal Toolchain Bootstrap ===" -ForegroundColor Cyan
+    
+    if ($MachineWide) {
+        Write-Host "Installing machine-wide tools..." -ForegroundColor Yellow
+        # Machine-wide installation logic would go here
+    } else {
+        Write-Host "Installing user tools..." -ForegroundColor Yellow
+        # User installation logic would go here
+    }
+    
+    Write-Host "Bootstrap complete" -ForegroundColor Green
+}
+
+# ----------------------------
+# Main profile execution
+# ----------------------------
+$global:ProfileRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+
+# Start deferred loading for interactive sessions
+if ($global:ProfileContext.IsInteractive) {
+    Import-ProfileDeferred -Deferred $DeferredContent
+}
+
+# Show status in interactive mode
+if ($global:ProfileContext.IsInteractive -and $global:PROFILE_MODE -eq "Full") {
+    Show-ProfileStatus
+}
+</file>
+
+<file path="Profile.v1.0-FIXED.ps1">
+# PowerShell Profile Fix - Corrected String Interpolation Syntax
+# Copy this to your actual profile location
+
+# The issue was on line 136: missing closing quote in string interpolation
+# Original broken code:
+# Write-Warning "Failed to generate completion for $Exe : $($_.Exception.Message)
+# Fixed code:
+# Write-Warning "Failed to generate completion for $Exe: $($_.Exception.Message)"
+
+# To apply this fix, copy the corrected line to your actual profile:
+# 1. Open C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1
+# 2. Find line ~136
+# 3. Replace the broken line with:
+#    Write-Warning "Failed to generate completion for $Exe: $($_.Exception.Message)"
+
+# Quick fix command:
+# $content = Get-Content "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+# $content[135] = $content[135] -replace '"Failed to generate completion for \$Exe : \$', '"Failed to generate completion for $Exe: $'
+# $content | Set-Content "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+</file>
+
+<file path="Profile.v1.0-improved.ps1">
+# PowerShell Profile v1.0 (Improved)
+# Goals: Fast startup, predictable behavior, agent-friendly, completion preservation
+
+# ----------------------------
+# Context detection
+# ----------------------------
+function Test-IsAdmin {
+    try {
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    } catch { return $false }
+}
+
+function Test-IsSystem {
+    try { return [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem }
+    catch { return $false }
+}
+
+function Test-IsInteractive { return -not [Console]::IsInputRedirected }
+
+function Get-ProfileContext {
+    [pscustomobject]@{
+        IsAdmin           = Test-IsAdmin
+        IsSystem          = Test-IsSystem
+        IsInteractive     = Test-IsInteractive
+        IsVSCode          = [bool]$env:VSCODE_PID
+        IsWindowsTerminal = [bool]$env:WT_SESSION
+        IsSSH             = [bool]$env:SSH_CLIENT -or [bool]$env:SSH_CONNECTION
+        HostName          = $Host.Name
+        PSVersion         = $PSVersionTable.PSVersion.ToString()
+    }
+}
+
+$global:ProfileContext = Get-ProfileContext
+
+# ----------------------------
+# Mode selection
+# ----------------------------
+if ($env:PROFILE_MODE) {
+    $global:PROFILE_MODE = $env:PROFILE_MODE
+} else {
+    if (-not $global:ProfileContext.IsInteractive) { $global:PROFILE_MODE = "Stable" }
+    elseif ($global:ProfileContext.IsSystem)        { $global:PROFILE_MODE = "Stable" }
+    else                                            { $global:PROFILE_MODE = "Full" }
+}
+
+# ----------------------------
+# Paths + caches
+# ----------------------------
+$global:ProfileRoot = Join-Path $HOME "Documents\PowerShell"
+$global:CacheRoot   = Join-Path $env:LOCALAPPDATA "PSProfileCache"
+$global:CompletionCache = Join-Path $global:CacheRoot "completions"
+
+foreach ($p in @($global:ProfileRoot, $global:CacheRoot, $global:CompletionCache)) {
+    if (-not (Test-Path $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
+}
+
+# Machine-wide tool locations
+$MachineToolsBin = "C:\ProgramData\Tools\bin"
+if (Test-Path $MachineToolsBin) {
+    $env:PATH = "$MachineToolsBin;$env:PATH"
+}
+
+function Test-CommandExists { param([string]$Name) return $null -ne (Get-Command $Name -ErrorAction SilentlyContinue) }
+
+# ----------------------------
+# Early: encoding + title + basic prompt
+# ----------------------------
+try {
+    [Console]::InputEncoding  = [Text.UTF8Encoding]::new($false)
+    [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+} catch {}
+
+try {
+    $adminTag = if ($global:ProfileContext.IsAdmin) { " [ADMIN]" } else { "" }
+    $sysTag   = if ($global:ProfileContext.IsSystem) { " [SYSTEM]" } else { "" }
+    $Host.UI.RawUI.WindowTitle = "pwsh $($global:ProfileContext.PSVersion)$adminTag$sysTag"
+} catch {}
+
+function global:prompt {
+    $loc = Get-Location
+    if ($global:ProfileContext.IsAdmin) { "[$loc] # " } else { "[$loc] $ " }
+}
+
+# ----------------------------
+# PSReadLine early (completion experience)
+# ----------------------------
+if ($global:ProfileContext.IsInteractive -and (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue)) {
+    try {
+        Set-PSReadLineOption -EditMode Windows `
+            -HistoryNoDuplicates `
+            -HistorySearchCursorMovesToEnd `
+            -PredictionSource History `
+            -PredictionViewStyle ListView `
+            -BellStyle None
+
+        Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
+        Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+        Set-PSReadLineKeyHandler -Key Tab       -Function MenuComplete
+        
+        # Fix Windows Terminal paste behavior
+        Set-PSReadLineKeyHandler -Key Ctrl+V -Function Paste
+    } catch {
+        Write-Warning "PSReadLine configuration failed: $($_.Exception.Message)"
+    }
+}
+
+# ----------------------------
+# Completion caching for CLIs
+# ----------------------------
+function Enable-CliCompletionFromCommand {
+    param(
+        [Parameter(Mandatory)][string]$Exe,
+        [Parameter(Mandatory)][string[]]$Args,
+        [int]$MaxAgeDays = 14
+    )
+    
+    if (-not (Test-CommandExists $Exe)) { return }
+
+    $safeName  = ($Exe + "_" + ($Args -join "_")).Replace(":", "").Replace("\\", "_").Replace("/", "_")
+    $cacheFile = Join-Path $global:CompletionCache "$safeName.ps1"
+
+    $needsRefresh = $true
+    if (Test-Path $cacheFile) {
+        $ageDays = ((Get-Date) - (Get-Item $cacheFile).LastWriteTime).TotalDays
+        if ($ageDays -lt $MaxAgeDays) { $needsRefresh = $false }
+    }
+
+    if ($needsRefresh) {
+        try {
+            $script = & $Exe @Args | Out-String
+            if ($script -and $script.Length -gt 200) {
+                Set-Content -Path $cacheFile -Value $script -Encoding UTF8
+            }
+        } catch {
+            Write-Warning "Failed to generate completion for $Exe: $($_.Exception.Message)"
+        }
+    }
+
+    if (Test-Path $cacheFile) {
+        try { . $cacheFile } catch {
+            Write-Warning "Failed to load completion cache for $Exe: $($_.Exception.Message)"
+        }
+    }
+}
+
+function Enable-HelmCompletion {
+    Enable-CliCompletionFromCommand -Exe "helm" -Args @("completion","powershell") -MaxAgeDays 14
+}
+
+# ----------------------------
+# Simplified Deferred Loading
+# ----------------------------
+function Start-DeferredLoad {
+    param([ScriptBlock]$LoadBlock)
+    
+    # Simple async loading without complex reflection
+    $job = Start-Job -ScriptBlock {
+        param($LoadBlockText)
+        
+        # Wait a bit for main session to be ready
+        Start-Sleep -Milliseconds 500
+        
+        try {
+            $logPath = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.log"
+            $errLog = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.error.log"
+            
+            New-Item -ItemType Directory -Path (Split-Path $logPath -Parent) -Force | Out-Null
+            
+            # Recreate scriptblock in job context
+            $sb = [scriptblock]::Create($LoadBlockText)
+            & $sb
+            
+            Add-Content -Path $logPath -Encoding UTF8 -Value ("Deferred OK  " + (Get-Date))
+        } catch {
+            Add-Content -Path $errLog -Encoding UTF8 -Value ("Deferred FAIL " + (Get-Date) + " :: " + $_.Exception.Message)
+        }
+    } -ArgumentList $LoadBlock.ToString()
+    
+    # Register cleanup
+    Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
+        if ($job.State -eq 'Running') { Stop-Job $job }
+    } | Out-Null
+}
+
+# ----------------------------
+# Deferred content to load
+# ----------------------------
+$DeferredContent = {
+    $global:DeferredLoaded = $true
+    
+    # Load completions
+    Enable-HelmCompletion
+    
+    # Load optional tools
+    if (Test-CommandExists "gsudo") { Set-Alias sudo gsudo }
+    if (Test-CommandExists "oh-my-posh") { 
+        try { oh-my-posh init pwsh | Invoke-Expression } catch {}
+    }
+    if (Test-CommandExists "zoxide") {
+        try { Invoke-Expression (& { (zoxide init --cmd z powershell | Out-String) }) } catch {}
+    }
+    
+    # Load profile.d modules if they exist
+    $profileDir = Join-Path $global:ProfileRoot "profile.d"
+    if (Test-Path $profileDir) {
+        Get-ChildItem $profileDir -Filter "*.ps1" | Sort-Object Name | ForEach-Object {
+            try { . $_.FullName } catch {
+                Write-Warning "Failed to load profile module $($_.Name): $($_.Exception.Message)"
+            }
+        }
+    }
+}
+
+# ----------------------------
+# Health + status functions
+# ----------------------------
+function Show-ProfileStatus {
+    $c = $global:ProfileContext
+    Write-Host "=== Profile v1.0 Status ===" -ForegroundColor Cyan
+    Write-Host ("Mode: " + $global:PROFILE_MODE) -ForegroundColor Yellow
+    Write-Host ("Host: " + $c.HostName + " | VSCode=" + $c.IsVSCode + " | WT=" + $c.IsWindowsTerminal + " | Interactive=" + $c.IsInteractive) -ForegroundColor Gray
+    Write-Host ("Admin=" + $c.IsAdmin + " | SYSTEM=" + $c.IsSystem + " | SSH=" + $c.IsSSH) -ForegroundColor Gray
+}
+
+function Invoke-ProfileHealthCheck {
+    $checks = @(
+        @{ Name="oh-my-posh"; Kind="cmd" },
+        @{ Name="zoxide"; Kind="cmd" },
+        @{ Name="gsudo"; Kind="cmd" },
+        @{ Name="helm"; Kind="cmd" }
+    )
+
+    $results = $checks | ForEach-Object {
+        $present = if ($_.Kind -eq "cmd") { [bool](Get-Command $_.Name -ErrorAction SilentlyContinue) } else { $false }
+        [pscustomobject]@{ Item=$_.Name; Present=$present }
+    }
+    
+    $results | Format-Table -AutoSize
+    return $results
+}
+
+function Edit-Profile {
+    code "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+}
+
+function Update-Profile {
+    param([switch]$Force)
+    
+    if (-not $Force -and -not $global:ProfileContext.IsInteractive) {
+        Write-Warning "Profile updates should be run interactively"
+        return
+    }
+    
+    Write-Host "Updating profile components..." -ForegroundColor Yellow
+    
+    # Example: Update completion caches
+    Enable-HelmCompletion -MaxAgeDays 0
+    
+    Write-Host "Profile update complete" -ForegroundColor Green
+}
+
+# ----------------------------
+# Bootstrap command
+# ----------------------------
+function Bootstrap-TerminalToolchain {
+    param([switch]$MachineWide)
+    
+    Write-Host "=== Terminal Toolchain Bootstrap ===" -ForegroundColor Cyan
+    
+    if ($MachineWide) {
+        Write-Host "Installing machine-wide tools..." -ForegroundColor Yellow
+        
+        # Create machine-wide tools directory
+        if (-not (Test-Path "C:\ProgramData\Tools\bin")) {
+            New-Item -ItemType Directory -Path "C:\ProgramData\Tools\bin" -Force | Out-Null
+        }
+        
+        Write-Host "Machine-wide tools directory ready: C:\ProgramData\Tools\bin" -ForegroundColor Green
+    }
+    
+    Write-Host "Bootstrap complete. Recommended tools:" -ForegroundColor Green
+    Write-Host "- gsudo: Admin elevation" -ForegroundColor Gray
+    Write-Host "- oh-my-posh: Prompt theming" -ForegroundColor Gray
+    Write-Host "- zoxide: Directory jumping" -ForegroundColor Gray
+    Write-Host "- Helm: Kubernetes package manager" -ForegroundColor Gray
+}
+
+# ----------------------------
+# Activate based on mode
+# ----------------------------
+if ($global:PROFILE_MODE -eq "Full") {
+    # Start deferred loading for interactive sessions
+    Start-DeferredLoad -LoadBlock $DeferredContent
+} else {
+    # Stable mode: load essentials only
+    Enable-HelmCompletion
+}
+
+# ----------------------------
+# Final initialization message
+# ----------------------------
+if ($global:ProfileContext.IsInteractive) {
+    Write-Host "PowerShell profile loaded ($($global:PROFILE_MODE) mode)" -ForegroundColor Green
+    Write-Host "Use 'Show-ProfileStatus' for details, 'Invoke-ProfileHealthCheck' for tool status" -ForegroundColor Gray
+}
+</file>
+
+<file path="ProjectPowershell1.code-workspace">
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+			
+
+		],
+		"extensions.experimental.deferredStartupFinishedActivation": false
+	}
+}
+</file>
+
+<file path="Profile.v1.0-FIXED-SYNTAX.ps1">
+# PowerShell Profile v1.0 (Fixed Syntax)
+# Based on expert analysis feedback
+# Goals: Fast startup, predictable behavior, agent-friendly, completion preservation
+
+# ----------------------------
+# Context detection
+# ----------------------------
+function Test-IsAdmin {
+    try {
+        return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    } catch { return $false }
+}
+
+function Test-IsSystem {
+    try { return [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem }
+    catch { return $false }
+}
+
+function Test-IsInteractive { return -not [Console]::IsInputRedirected }
+
+function Get-ProfileContext {
+    [pscustomobject]@{
+        IsAdmin           = Test-IsAdmin
+        IsSystem          = Test-IsSystem
+        IsInteractive     = Test-IsInteractive
+        IsVSCode          = [bool]$env:VSCODE_PID
+        IsWindowsTerminal = [bool]$env:WT_SESSION
+        IsSSH             = [bool]$env:SSH_CLIENT -or [bool]$env:SSH_CONNECTION
+        HostName          = $Host.Name
+        PSVersion         = $PSVersionTable.PSVersion.ToString()
+    }
+}
+
+$global:ProfileContext = Get-ProfileContext
+
+# ----------------------------
+# Mode selection (WT=Full, VSCode=Stable)
+# ----------------------------
+if ($env:PROFILE_MODE) {
+    $global:PROFILE_MODE = $env:PROFILE_MODE
+} else {
+    if (-not $global:ProfileContext.IsInteractive) { $global:PROFILE_MODE = "Stable" }
+    elseif ($global:ProfileContext.IsSystem)        { $global:PROFILE_MODE = "Stable" }
+    elseif ($global:ProfileContext.IsVSCode)        { $global:PROFILE_MODE = "Stable" }
+    elseif ($global:ProfileContext.IsWindowsTerminal) { $global:PROFILE_MODE = "Full" }
+    else                                             { $global:PROFILE_MODE = "Full" }
+}
+
+# ----------------------------
+# Paths + caches
+# ----------------------------
+$global:ProfileRoot = Join-Path $HOME "Documents\PowerShell"
+$global:CacheRoot   = Join-Path $env:LOCALAPPDATA "PSProfileCache"
+$global:CompletionCache = Join-Path $global:CacheRoot "completions"
+
+foreach ($p in @($global:ProfileRoot, $global:CacheRoot, $global:CompletionCache)) {
+    if (-not (Test-Path $p)) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
+}
+
+# Machine-wide tool locations (optional)
+$MachineToolsBin = "C:\ProgramData\Tools\bin"
+if (Test-Path $MachineToolsBin) {
+    if ($env:Path -notlike "*$MachineToolsBin*") { $env:Path = "$MachineToolsBin;$env:Path" }
+}
+
+function Test-CommandExists { param([string]$Name) return $null -ne (Get-Command $Name -ErrorAction SilentlyContinue) }
+
+# ----------------------------
+# Early: encoding + title + basic prompt
+# ----------------------------
+try {
+    [Console]::InputEncoding  = [Text.UTF8Encoding]::new($false)
+    [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+} catch {}
+
+try {
+    $adminTag = if ($global:ProfileContext.IsAdmin) { " [ADMIN]" } else { "" }
+    $sysTag   = if ($global:ProfileContext.IsSystem) { " [SYSTEM]" } else { "" }
+    $Host.UI.RawUI.WindowTitle = "pwsh $($global:ProfileContext.PSVersion)$adminTag$sysTag"
+} catch {}
+
+function global:prompt {
+    $loc = Get-Location
+    if ($global:ProfileContext.IsAdmin) { "[$loc] # " } else { "[$loc] $ " }
+}
+
+# ----------------------------
+# PSReadLine early (completion UX)
+# ----------------------------
+if ($global:ProfileContext.IsInteractive -and (Get-Command Set-PSReadLineOption -ErrorAction SilentlyContinue)) {
+    try {
+        Set-PSReadLineOption -EditMode Windows `
+            -HistoryNoDuplicates `
+            -HistorySearchCursorMovesToEnd `
+            -PredictionSource History `
+            -PredictionViewStyle ListView `
+            -BellStyle None
+
+        Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
+        Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+        Set-PSReadLineKeyHandler -Key Tab       -Function MenuComplete
+        
+        # Fix Windows Terminal paste behavior - use chord binding
+        Set-PSReadLineKeyHandler -Chord 'Ctrl+v' -Function Paste
+    } catch {
+        Write-Warning "PSReadLine configuration failed: $($_.Exception.Message)"
+    }
+}
+
+# ----------------------------
+# Completion caching for CLIs (Helm)
+# ----------------------------
+function Enable-CliCompletionFromCommand {
+    param(
+        [Parameter(Mandatory)][string]$Exe,
+        [Parameter(Mandatory)][string[]]$Args,
+        [int]$MaxAgeDays = 14
+    )
+    
+    if (-not (Test-CommandExists $Exe)) { return }
+
+    $safeName  = ($Exe + "_" + ($Args -join "_")).Replace(":", "").Replace("\\", "_").Replace("/", "_")
+    $cacheFile = Join-Path $global:CompletionCache "$safeName.ps1"
+
+    $needsRefresh = $true
+    if (Test-Path $cacheFile) {
+        $ageDays = ((Get-Date) - (Get-Item $cacheFile).LastWriteTime).TotalDays
+        if ($ageDays -lt $MaxAgeDays) { $needsRefresh = $false }
+    }
+
+    if ($needsRefresh) {
+        try {
+            $script = & $Exe @Args | Out-String
+            if ($script -and $script.Length -gt 200) {
+                Set-Content -Path $cacheFile -Value $script -Encoding UTF8
+            }
+        } catch {
+            Write-Warning "Failed to generate completion for $Exe : $($_.Exception.Message)"
+        }
+    }
+
+    if (Test-Path $cacheFile) {
+        try { . $cacheFile } catch {
+            Write-Warning "Failed to load completion cache for $Exe : $($_.Exception.Message)"
+        }
+    }
+}
+
+function Enable-HelmCompletion {
+    Enable-CliCompletionFromCommand -Exe "helm" -Args @("completion","powershell") -MaxAgeDays 14
+}
+
+# ----------------------------
+# Deferred loading (in-process runspace)
+# ----------------------------
+function Import-ProfileDeferred {
+    param([Parameter(Mandatory)][ScriptBlock]$Deferred)
+
+    # Capture the interactive session state
+    $GlobalState = [psmoduleinfo]::new($false)
+    $GlobalState.SessionState = $ExecutionContext.SessionState
+
+    # Store deferred code as TEXT in the captured session state
+    $GlobalState.SessionState.PSVariable.Set('DeferredText', $Deferred.ToString())
+
+    # Create runspace to run async (in-process)
+    $Runspace   = [runspacefactory]::CreateRunspace($Host)
+    $PowerShell = [powershell]::Create($Runspace)
+    $Runspace.Open()
+    $Runspace.SessionStateProxy.PSVariable.Set('GlobalState', $GlobalState)
+
+    # Async wrapper
+    $Wrapper = {
+        Start-Sleep -Milliseconds 200
+        . $GlobalState {
+            do { Start-Sleep -Milliseconds 200 } until (Get-Command Import-Module -ErrorAction Ignore)
+
+            try {
+                # Rebuild scriptblock INSIDE this session state, then dot-source it
+                $sb = [scriptblock]::Create($DeferredText)
+                . $sb
+            } catch {
+                $errLog = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.error.log"
+                New-Item -ItemType Directory -Path (Split-Path $errLog -Parent) -Force | Out-Null
+                Add-Content -Path $errLog -Encoding UTF8 -Value ("Deferred FAIL " + (Get-Date) + " :: " + $_.Exception.Message)
+                Write-Warning ("Deferred profile load failed: " + $_.Exception.Message)
+            } finally {
+                Remove-Variable DeferredText -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    $null = $PowerShell.AddScript($Wrapper.ToString()).BeginInvoke()
+}
+
+# ----------------------------
+# Deferred content to load
+# ----------------------------
+$DeferredContent = {
+    $logPath = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.log"
+    New-Item -ItemType Directory -Path (Split-Path $logPath -Parent) -Force | Out-Null
+    $global:DeferredLoaded = $true
+    Add-Content -Path $logPath -Encoding UTF8 -Value ("Deferred OK  " + (Get-Date))
+
+    Enable-HelmCompletion
+
+    if (Test-CommandExists "gsudo") { Set-Alias sudo gsudo }
+    if (Test-CommandExists "oh-my-posh") { 
+        try { oh-my-posh init pwsh | Invoke-Expression } catch {}
+    }
+    if (Test-CommandExists "zoxide") {
+        try { zoxide init --cmd z powershell | Invoke-Expression } catch {}
+    }
+    
+    # Load profile.d modules if they exist
+    $profileDir = Join-Path $global:ProfileRoot "profile.d"
+    if (Test-Path $profileDir) {
+        Get-ChildItem $profileDir -Filter "*.ps1" | Sort-Object Name | ForEach-Object {
+            try { . $_.FullName } catch {
+                Write-Warning "Failed to load profile module $($_.Name): $($_.Exception.Message)"
+            }
+        }
+    }
+}
+
+# ----------------------------
+# Health + status functions
+# ----------------------------
+function Show-ProfileStatus {
+    $c = $global:ProfileContext
+    Write-Host "=== Profile v1.0 Status ===" -ForegroundColor Cyan
+    Write-Host ("Mode: " + $global:PROFILE_MODE) -ForegroundColor Yellow
+    Write-Host ("Host: " + $c.HostName + " | VSCode=" + $c.IsVSCode + " | WT=" + $c.IsWindowsTerminal + " | Interactive=" + $c.IsInteractive) -ForegroundColor Gray
+    Write-Host ("Admin=" + $c.IsAdmin + " | SYSTEM=" + $c.IsSystem + " | SSH=" + $c.IsSSH) -ForegroundColor Gray
+}
+
+function Invoke-ProfileHealthCheck {
+    $checks = @(
+        @{ Name="oh-my-posh"; Kind="cmd" },
+        @{ Name="zoxide"; Kind="cmd" },
+        @{ Name="gsudo"; Kind="cmd" },
+        @{ Name="helm"; Kind="cmd" }
+    )
+
+    $results = $checks | ForEach-Object {
+        $present = if ($_.Kind -eq "cmd") { [bool](Get-Command $_.Name -ErrorAction SilentlyContinue) } else { $false }
+        [pscustomobject]@{ Item=$_.Name; Present=$present }
+    }
+    
+    $results | Format-Table -AutoSize
+    return $results
+}
+
+function Edit-Profile {
+    code "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+}
+
+function Update-Profile {
+    param([switch]$Force)
+    
+    if (-not $Force -and -not $global:ProfileContext.IsInteractive) {
+        Write-Warning "Profile updates should be run interactively"
+        return
+    }
+    
+    Write-Host "Updating profile components..." -ForegroundColor Yellow
+    
+    # Update completion caches
+    Enable-HelmCompletion -MaxAgeDays 0
+    
+    Write-Host "Profile update complete" -ForegroundColor Green
+}
+
+# ----------------------------
+# Bootstrap command
+# ----------------------------
+function Bootstrap-TerminalToolchain {
+    param([switch]$MachineWide)
+    
+    Write-Host "=== Terminal Toolchain Bootstrap ===" -ForegroundColor Cyan
+    
+    if ($MachineWide) {
+        Write-Host "Installing machine-wide tools..." -ForegroundColor Yellow
+        
+        # Create machine-wide tools directory
+        if (-not (Test-Path "C:\ProgramData\Tools\bin")) {
+            New-Item -ItemType Directory -Path "C:\ProgramData\Tools\bin" -Force | Out-Null
+        }
+        
+        Write-Host "Machine-wide tools directory ready: C:\ProgramData\Tools\bin" -ForegroundColor Green
+    }
+    
+    Write-Host "Bootstrap complete. Recommended tools:" -ForegroundColor Green
+    Write-Host "- gsudo: Admin elevation" -ForegroundColor Gray
+    Write-Host "- oh-my-posh: Prompt theming" -ForegroundColor Gray
+    Write-Host "- zoxide: Directory jumping" -ForegroundColor Gray
+    Write-Host "- Helm: Kubernetes package manager" -ForegroundColor Gray
+}
+
+# ----------------------------
+# Activate based on mode
+# ----------------------------
+if ($global:PROFILE_MODE -eq "Full") {
+    # Start deferred loading for interactive sessions
+    Import-ProfileDeferred -Deferred $DeferredContent
+} else {
+    # Stable mode: load essentials only
+    Enable-HelmCompletion
+}
+
+# ----------------------------
+# Final initialization message
+# ----------------------------
+if ($global:ProfileContext.IsInteractive) {
+    Write-Host "PowerShell profile loaded ($($global:PROFILE_MODE) mode)" -ForegroundColor Green
+    Write-Host "Use 'Show-ProfileStatus' for details, 'Invoke-ProfileHealthCheck' for tool status" -ForegroundColor Gray
+}
+</file>
+
+</files>

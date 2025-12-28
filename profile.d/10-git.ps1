@@ -15,10 +15,10 @@ function Get-GitStatusInfo {
 
 # Git aliases
 Set-Alias -Name g -Value git
-Set-Alias -Name gs -Value git status
-Set-Alias -Name gco -Value git checkout
-Set-Alias -Name gcm -Value git commit
-Set-Alias -Name gp -Value git push
+function gs { git status }
+function gco { git checkout $args }
+function gcm { git commit $args }
+function gp { git push $args }
 
 function Get-GitPrompt {
     $info = Get-GitStatusInfo

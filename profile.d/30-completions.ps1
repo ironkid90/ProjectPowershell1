@@ -1,7 +1,7 @@
 # Additional completion generators
 
 function Enable-KubectlCompletion {
-    Enable-CliCompletionFromCommand -Exe "kubectl" -Args @("completion", "powershell") -MaxAgeDays 30
+    Enable-CliCompletionFromCommand -Exe "kubectl" -Arguments @("completion", "powershell") -MaxAgeDays 30
 }
 
 function Enable-DockerCompletion {
@@ -19,7 +19,7 @@ function Enable-DockerCompletion {
 }
 
 function Enable-AzureCompletion {
-    Enable-CliCompletionFromCommand -Exe "az" -Args @("completion", "powershell") -MaxAgeDays 30
+    Enable-CliCompletionFromCommand -Exe "az" -Arguments @("completion", "powershell") -MaxAgeDays 30
 }
 
 # Load additional completions in deferred mode

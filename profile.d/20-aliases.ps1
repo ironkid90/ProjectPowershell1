@@ -1,9 +1,9 @@
 # Useful aliases and shortcuts
 
 # Navigation
-Set-Alias -Name .. -Value { Set-Location .. }
-Set-Alias -Name ... -Value { Set-Location ..\.. }
-Set-Alias -Name .... -Value { Set-Location ..\..\.. }
+function .. { Set-Location .. }
+function ... { Set-Location ..\.. }
+function .... { Set-Location ..\..\.. }
 
 # System
 Set-Alias -Name which -Value Get-Command

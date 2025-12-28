@@ -111,13 +111,13 @@ if ($global:ProfileContext.IsInteractive -and (Get-Command Set-PSReadLineOption 
 function Enable-CliCompletionFromCommand {
     param(
         [Parameter(Mandatory)][string]$Exe,
-        [Parameter(Mandatory)][string[]]$Args,
+        [Parameter(Mandatory)][string[]]$Arguments,
         [int]$MaxAgeDays = 14
     )
     
     if (-not (Test-CommandExists $Exe)) { return }
 
-    $safeName  = ($Exe + "_" + ($Args -join "_")).Replace(":", "").Replace("\\", "_").Replace("/", "_")
+    $safeName  = ($Exe + "_" + ($Arguments -join "_")).Replace(":", "").Replace("\\", "_").Replace("/", "_")
     $cacheFile = Join-Path $global:CompletionCache "$safeName.ps1"
 
     $needsRefresh = $true
@@ -128,24 +128,24 @@ function Enable-CliCompletionFromCommand {
 
     if ($needsRefresh) {
         try {
-            $script = & $Exe @Args | Out-String
+            $script = & $Exe @Arguments | Out-String
             if ($script -and $script.Length -gt 200) {
                 Set-Content -Path $cacheFile -Value $script -Encoding UTF8
             }
         } catch {
-            Write-Warning "Failed to generate completion for $Exe: $($_.Exception.Message)"
+            Write-Warning "Failed to generate completion for ${Exe}: $($_.Exception.Message)"
         }
     }
 
     if (Test-Path $cacheFile) {
         try { . $cacheFile } catch {
-            Write-Warning "Failed to load completion cache for $Exe: $($_.Exception.Message)"
+            Write-Warning "Failed to load completion cache for ${Exe}: $($_.Exception.Message)"
         }
     }
 }
 
 function Enable-HelmCompletion {
-    Enable-CliCompletionFromCommand -Exe "helm" -Args @("completion","powershell") -MaxAgeDays 14
+    Enable-CliCompletionFromCommand -Exe "helm" -Arguments @("completion","powershell") -MaxAgeDays 14
 }
 
 # ----------------------------
@@ -154,33 +154,17 @@ function Enable-HelmCompletion {
 function Start-DeferredLoad {
     param([ScriptBlock]$LoadBlock)
     
-    # Simple async loading without complex reflection
-    $job = Start-Job -ScriptBlock {
-        param($LoadBlockText)
-        
-        # Wait a bit for main session to be ready
-        Start-Sleep -Milliseconds 500
-        
-        try {
-            $logPath = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.log"
-            $errLog = Join-Path $env:LOCALAPPDATA "PSProfileCache\deferred.error.log"
-            
-            New-Item -ItemType Directory -Path (Split-Path $logPath -Parent) -Force | Out-Null
-            
-            # Recreate scriptblock in job context
-            $sb = [scriptblock]::Create($LoadBlockText)
-            & $sb
-            
-            Add-Content -Path $logPath -Encoding UTF8 -Value ("Deferred OK  " + (Get-Date))
-        } catch {
-            Add-Content -Path $errLog -Encoding UTF8 -Value ("Deferred FAIL " + (Get-Date) + " :: " + $_.Exception.Message)
-        }
-    } -ArgumentList $LoadBlock.ToString()
+    # Note: Start-Job runs in a separate process, so aliases and functions defined there
+    # do NOT propagate to the current session. For profile elements like aliases,
+    # functions (oh-my-posh, zoxide, etc.), we MUST run in the main session.
     
-    # Register cleanup
-    Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
-        if ($job.State -eq 'Running') { Stop-Job $job }
-    } | Out-Null
+    # We run synchronously to ensure correctness. 
+    # True background loading of global state is not supported in PowerShell.
+    try {
+        . $LoadBlock
+    } catch {
+        Write-Warning "Deferred load failed: $($_.Exception.Message)"
+    }
 }
 
 # ----------------------------
@@ -241,7 +225,12 @@ function Invoke-ProfileHealthCheck {
 }
 
 function Edit-Profile {
-    code "C:\Users\Admin\Documents\PowerShell\Profile.v1.0.ps1"
+    $profilePath = Join-Path $HOME "Documents\PowerShell\Profile.v1.0-improved.ps1"
+    if (Test-Path $profilePath) {
+        code $profilePath
+    } else {
+        Write-Warning "Profile file not found: $profilePath"
+    }
 }
 
 function Update-Profile {
@@ -263,7 +252,7 @@ function Update-Profile {
 # ----------------------------
 # Bootstrap command
 # ----------------------------
-function Bootstrap-TerminalToolchain {
+function Initialize-TerminalToolchain {
     param([switch]$MachineWide)
     
     Write-Host "=== Terminal Toolchain Bootstrap ===" -ForegroundColor Cyan
