@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+			
+
+		],
+		"extensions.experimental.deferredStartupFinishedActivation": false
+	}
+}

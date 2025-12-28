@@ -1,11 +1,7 @@
 {
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./profile.d",
-        "-p",
-        "*test.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+  "python.testing.unittestArgs": ["-v", "-s", "./profile.d", "-p", "*test.py"],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": true,
+  "codeantai.pythonDocstringFormat": "\"\"\"{Short one sentence description of function}\nParameters:\n    - param1 (type): Short Description of param1.\n    - param2 (type): Short Description of param2, if applicable.\nReturns:\n    - type: Short Description of the return value.\nExample:\n    - Write only one example of sample input and sample output function(sample_input) -> sample_output\n    - This example should try to mock the input schema and output schema with relevant values\n\"\"\"",
+  "codeantai.javascriptDocstringFormat": "/**\n* Brief description of the function in one line\n* @example\n* functionName(sample_arg1, sample_arg2)\n* some sample return value\n* @param {type} {Argument} - Argument description in one line.\n* @returns {type} Return description in one line.\n* @description\n*   - Only write non obvious things about the function.\n*   - Do not write things that are explained above in the function description or inputs.\n*   - Never write more than 4 points.\n*/"
 }
